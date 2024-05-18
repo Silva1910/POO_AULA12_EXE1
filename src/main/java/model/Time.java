@@ -1,41 +1,21 @@
 package model;
 
+
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Time {
 
-	private int codigo_time; 
+	private int codigoTime; 
 	private String nome;
 	private String cidade;
-	
-	public Time() {
-		super();
-	}
-
-	public int getCodigoTime() {
-		return codigo_time;
-	}
-
-	public void setCodigoTime(int codigo_time) {
-		this.codigo_time = codigo_time;
-	}
-
-	public String getNome() {
-		return nome;
-	}
-
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
-
-	public String getCidade() {
-		return cidade;
-	}
-
-	public void setCidade(String cidade) {
-		this.cidade = cidade;
-	}
-	
-	
-	
 	
 
 }

@@ -80,7 +80,7 @@ public class TimeDao implements ICrud<Time> {
         List<Time> time = new ArrayList<>();
 
         Connection c = gDao.getConnection();
-        String sql = "SELECT codigotime, nome, cidade FROM time";
+        String sql = "SELECT codigoTime, nome, cidade FROM time"; 
         PreparedStatement ps = c.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
@@ -95,4 +95,5 @@ public class TimeDao implements ICrud<Time> {
         c.close();
         return time;
     }
+
 }

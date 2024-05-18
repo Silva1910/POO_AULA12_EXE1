@@ -12,9 +12,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
 import java.sql.SQLException;
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,16 +28,20 @@ public class JogadorServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            List<Time> times = listarTime(); 
-            request.setAttribute("times", times);
+        	  carregarTimes(request);
+              List<Time> times = listarTime(); 
+              request.setAttribute("times", times);
         } catch (SQLException | ClassNotFoundException e) {
             request.setAttribute("erro", e.getMessage());
         }
         RequestDispatcher rd = request.getRequestDispatcher("Jogador.jsp");
         rd.forward(request, response);
     }
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String cmd = request.getParameter("botao");
+        carregarTimes(request);
+        String cmd = request.getParameter("cmd");
+       
         String codigo = request.getParameter("Timecodigo");
         String Id = request.getParameter("Id");
         String nome = request.getParameter("nome");
@@ -50,25 +53,22 @@ public class JogadorServlet extends HttpServlet {
         String erro = "";
         List<Jogador> jogadores = new ArrayList<>();
         Jogador j = new Jogador();
-Time t = new Time();
+        Time t = new Time();
+
         if (!cmd.contains("Listar")) {
             j.setId(Integer.parseInt(Id));
         }
 
-
-        if (!codigo.isEmpty()) {
-            t.setCodigoTime(Integer.parseInt("1")) ; 
-        }
-
         if (cmd.contains("Cadastrar") || cmd.contains("Alterar")) {
+            t.setCodigoTime(Integer.parseInt(codigo));
+            j.setTime(t);
             j.setNome(nome);
             j.setAltura(Float.parseFloat(altura));
             j.setPeso(Float.parseFloat(peso));
 
             try {
-              
                 if (!dataStr.isEmpty()) {
-                    j.setDataNasc(Date.valueOf(dataStr)); 
+                    j.setDataNasc(LocalDate.parse(dataStr));
                 }
             } catch (IllegalArgumentException e) {
                 erro = "Formato de data inválido. Use o formato AAAA-MM-DD.";
@@ -97,11 +97,10 @@ Time t = new Time();
             request.setAttribute("erro", erro);
             request.setAttribute("jogadores", jogadores);
 
-            RequestDispatcher rd = request.getRequestDispatcher("Jogadores.jsp");
+            RequestDispatcher rd = request.getRequestDispatcher("Jogador.jsp");
             rd.forward(request, response);
         }
     }
-
 
     private void cadastrarJogador(Jogador j) throws SQLException, ClassNotFoundException {
         if (j.getTime() == null) {
@@ -112,7 +111,6 @@ Time t = new Time();
         JogadoresDao jDao = new JogadoresDao(gDao);
         jDao.inserir(j);
     }
-
 
     private void alterarJogador(Jogador j) throws SQLException, ClassNotFoundException {
         GenericDao gDao = new GenericDao();
@@ -137,6 +135,16 @@ Time t = new Time();
         JogadoresDao jDao = new JogadoresDao(gDao);
         return jDao.listar();
     }
+
+    private void carregarTimes(HttpServletRequest request) {
+        try {
+            List<Time> times = listarTime();
+            request.setAttribute("times", times);
+        } catch (SQLException | ClassNotFoundException e) {
+            request.setAttribute("erro", e.getMessage());
+        }
+    }
+
     private List<Time> listarTime() throws SQLException, ClassNotFoundException {
         GenericDao gDao = new GenericDao();
         TimeDao tDao = new TimeDao(gDao);

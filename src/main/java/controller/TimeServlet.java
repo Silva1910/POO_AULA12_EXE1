@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @WebServlet("/time")
 public class TimeServlet extends HttpServlet {
 
@@ -25,12 +26,16 @@ public class TimeServlet extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            carregarTimes(request);
+        } catch (SQLException | ClassNotFoundException e) {
+            request.setAttribute("erro", e.getMessage());
+        }
         RequestDispatcher rd = request.getRequestDispatcher("Times.jsp");
         rd.forward(request, response);
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
         String cmd = request.getParameter("botao");
         String codigo = request.getParameter("codigo");
         String nome = request.getParameter("nome");
@@ -38,49 +43,50 @@ public class TimeServlet extends HttpServlet {
 
         String saida = "";
         String erro = "";
-        List<Time> time = new ArrayList<>();
         Time t = new Time();
 
-        if (!cmd.contains("Listar")) {
+        if (codigo != null && !codigo.isEmpty()) {
             t.setCodigoTime(Integer.parseInt(codigo));
         }
-        if (cmd.contains("Cadastrar") || cmd.contains("Alterar")) {
+        if (nome != null) {
             t.setNome(nome);
+        }
+        if (cidade != null) {
             t.setCidade(cidade);
         }
 
         try {
-            if (cmd.contains("Cadastrar")) {
+            if ("Cadastrar".equals(cmd)) {
                 cadastrarTime(t);
                 saida = "Time cadastrado com sucesso";
-            }
-            if (cmd.contains("Alterar")) {
+            } else if ("Atualizar".equals(cmd)) {
                 alterarTime(t);
-                saida = "Time Alterado com sucesso";
-            }
-            if (cmd.contains("Excluir")) {
+                saida = "Time atualizado com sucesso";
+            } else if ("Excluir".equals(cmd)) {
                 excluirTime(t);
-                saida = "Time excluido com sucesso";
-            }
-            if (cmd.contains("Buscar")) {
+                saida = "Time excluído com sucesso";
+            } else if ("Buscar".equals(cmd)) {
                 t = buscarTime(t);
+                request.setAttribute("Time", t);
             }
-            if (cmd.contains("Listar")) {
-                time = listarTime();
-            }
-
         } catch (SQLException | ClassNotFoundException e) {
             erro = e.getMessage();
         } finally {
             request.setAttribute("saida", saida);
             request.setAttribute("erro", erro);
-            request.setAttribute("Time", t);
-            request.setAttribute("time", time);
-
+            try {
+                carregarTimes(request);
+            } catch (SQLException | ClassNotFoundException e) {
+                request.setAttribute("erro", e.getMessage());
+            }
             RequestDispatcher rd = request.getRequestDispatcher("Times.jsp");
             rd.forward(request, response);
         }
+    }
 
+    private void carregarTimes(HttpServletRequest request) throws SQLException, ClassNotFoundException {
+        List<Time> times = listarTime();
+        request.setAttribute("times", times);
     }
 
     private void cadastrarTime(Time t) throws SQLException, ClassNotFoundException {
@@ -112,5 +118,4 @@ public class TimeServlet extends HttpServlet {
         TimeDao tDao = new TimeDao(gDao);
         return tDao.listar();
     }
-
 }
